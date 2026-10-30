@@ -1,122 +1,53 @@
-import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
-import './App.css'
+import React, { useState } from 'react';
+import SplashScreen from './components/SplashScreen';
+import PageOne from './pages/PageOne';
+import EmptySection from './pages/EmptySection';
 
-function App() {
-  const [count, setCount] = useState(0)
+export default function App() {
+  const [view, setView] = useState('splash'); 
+  const [bgColor, setBgColor] = useState('#333333'); 
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
-        </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+    <div 
+      className="w-full h-screen overflow-hidden text-white selection:bg-metro-teal transition-colors duration-500 ease-in-out relative"
+      style={{ backgroundColor: bgColor }}
+    >
+      <div 
+        className={`absolute inset-0 w-full h-full transition-transform duration-700 ease-in-out ${
+          view === 'splash' ? 'translate-y-0' : '-translate-y-full'
+        }`}
+      >
+        <SplashScreen 
+          bgColor={bgColor}
+          setBgColor={setBgColor}
+          onEnter={() => setView('page1')} 
+        />
+      </div>
 
-      <div className="ticks"></div>
-
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
-  )
+      <div 
+        className={`absolute inset-0 w-full h-full transition-transform duration-700 ease-in-out ${
+          view === 'page1' ? 'translate-y-0' : view === 'page2' ? '-translate-y-full' : 'translate-y-full'
+        }`}
+      >
+        <PageOne 
+          bgColor={bgColor}
+          setBgColor={setBgColor}
+          onNextSection={() => setView('page2')} 
+          onBack={() => setView('splash')} 
+        />
+      </div>
+      
+      <div 
+        className={`absolute inset-0 w-full h-full transition-transform duration-700 ease-in-out ${
+          view === 'page2' ? 'translate-y-0' : 'translate-y-full'
+        }`}
+      >
+        <EmptySection 
+          bgColor={bgColor}
+          setBgColor={setBgColor}
+          onBack={() => setView('page1')} 
+        />
+      </div>
+    </div>
+  );
 }
-
-export default App
