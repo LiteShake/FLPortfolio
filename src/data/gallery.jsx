@@ -1,4 +1,5 @@
 // src/data/gallery.js
+// Sizes: 1x1, 2x2, 2x4 (tall), 4x2 (wide), 4x4. Tiles are auto-packed in the order listed.
 
 export const TILES = [
   // 4x2 (Wide)
@@ -33,31 +34,43 @@ export const TILES = [
   { id: 't15', label: 'Wordle Chan', subtitle: 'Anime', w: 2, h: 4, color: 'bg-metro-blue', image: '/images/15.webp' },
 ];
 
-export function pack(tiles, cols) {
-  const occ = [];
+/**
+ * Auto-packs tiles (first-fit, fills holes).
+ *
+ * horizontal = true  -> fixed number of ROWS (`lanes`), tiles flow to the right (desktop)
+ * horizontal = false -> fixed number of COLS (`lanes`), tiles flow downward (mobile)
+ *
+ * Returns { pos: { [id]: { r, c } }, cols, rows } in grid cells.
+ */
+export function pack(tiles, lanes, horizontal = true) {
+  const occ = []; // occ[flow][lane]
   const pos = {};
 
-  const free = (r, c, w, h) => {
-    for (let dr = 0; dr < h; dr++)
-      for (let dc = 0; dc < w; dc++) if (occ[r + dr]?.[c + dc]) return false;
+  const free = (b, a, lb, la) => {
+    for (let db = 0; db < lb; db++)
+      for (let da = 0; da < la; da++) if (occ[b + db]?.[a + da]) return false;
     return true;
   };
 
   for (const t of tiles) {
+    const la = Math.min(horizontal ? t.h : t.w, lanes);
+    const lb = horizontal ? t.w : t.h;
     let placed = false;
-    for (let r = 0; !placed; r++) {
-      for (let c = 0; c <= cols - t.w; c++) {
-        if (free(r, c, t.w, t.h)) {
-          for (let dr = 0; dr < t.h; dr++) {
-            occ[r + dr] = occ[r + dr] ?? Array(cols).fill(false);
-            for (let dc = 0; dc < t.w; dc++) occ[r + dr][c + dc] = true;
-          }
-          pos[t.id] = { r, c };
-          placed = true;
-          break;
+
+    for (let b = 0; !placed; b++) {
+      for (let a = 0; a <= lanes - la; a++) {
+        if (!free(b, a, lb, la)) continue;
+        for (let db = 0; db < lb; db++) {
+          occ[b + db] = occ[b + db] ?? Array(lanes).fill(false);
+          for (let da = 0; da < la; da++) occ[b + db][a + da] = true;
         }
+        pos[t.id] = horizontal ? { r: a, c: b } : { r: b, c: a };
+        placed = true;
+        break;
       }
     }
   }
-  return { pos, rows: Math.max(1, occ.length) };
+
+  const flow = Math.max(1, occ.length);
+  return { pos, cols: horizontal ? flow : lanes, rows: horizontal ? lanes : flow };
 }

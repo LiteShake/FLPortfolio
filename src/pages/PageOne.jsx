@@ -4,40 +4,43 @@ import { TILES, pack } from '../data/gallery';
 import { ArrowLeft24Regular, ChevronDown24Regular, Color24Regular } from '@fluentui/react-icons';
 import ColorPicker from '../components/ColorPicker';
 
+const GAP = 16;
+const ROWS = 6;       // desktop gallery is exactly 6 unit tiles tall
+
 export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) {
-  const [unitSize, setUnitSize] = useState(140);
-  const [cols, setCols] = useState(10);
+  const [viewport, setViewport] = useState({ width: 1280, mainH: 600 });
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const scrollRef = useRef(null);
+  const mainRef = useRef(null);
   const isDesktopRef = useRef(false);
 
-  const { pos, rows } = pack(TILES, cols);
+  const isDesktop = viewport.width >= 768;
+  isDesktopRef.current = isDesktop;
+
+  // Unit size is derived from the measured space on every render, so it always
+  // matches ROWS (no stale value after hot reload or a ROWS change).
+  const unitSize = isDesktop
+    ? Math.max(40, (viewport.mainH - 64 - GAP * (ROWS - 1)) / ROWS) // 6 rows fill the whole tile area
+    : Math.max(40, (viewport.width - 32 * 2 - GAP * 5) / 6);
+
+  // Desktop: ROWS fixed rows, tiles flow right. Mobile: 6 fixed cols, tiles flow down.
+  const { pos, cols, rows } = pack(TILES, isDesktop ? ROWS : 6, isDesktop);
 
   useEffect(() => {
-    const calculateSize = () => {
-      const width = window.innerWidth;
-      const isDesktop = width >= 768;
-      isDesktopRef.current = isDesktop;
-      const currentPad = isDesktop ? 96 : 32;
-      const GAP = 16;
+    const measure = () =>
+      setViewport({
+        width: window.innerWidth,
+        mainH: mainRef.current?.clientHeight ?? window.innerHeight * 0.7,
+      });
 
-      if (!isDesktop) {
-        const availableWidth = width - (currentPad * 2) - (GAP * 5);
-        setUnitSize(Math.max(40, availableWidth / 6));
-        setCols(6);
-      } else {
-        const baseUnitSize = 140;
-        const availableWidth = width - (currentPad * 2);
-        const fitCols = Math.floor((availableWidth + GAP) / (baseUnitSize + GAP));
-        const totalCols = fitCols + 6;
-        setUnitSize(baseUnitSize);
-        setCols(totalCols);
-      }
+    measure();
+    const ro = new ResizeObserver(measure);
+    if (mainRef.current) ro.observe(mainRef.current);
+    window.addEventListener('resize', measure);
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('resize', measure);
     };
-
-    calculateSize();
-    window.addEventListener('resize', calculateSize);
-    return () => window.removeEventListener('resize', calculateSize);
   }, []);
 
   // Smooth horizontal scroll on desktop — lerp-based easing.
@@ -87,7 +90,6 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
     };
   }, []);
 
-  const GAP = 16;
   const gridWidth = Math.max(0, cols * unitSize + (cols - 1) * GAP);
   const gridHeight = Math.max(0, rows * unitSize + (rows - 1) * GAP);
 
@@ -127,7 +129,7 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
         </div>
       </header>
 
-      <main className="flex-1 min-h-0 relative overflow-hidden">
+      <main ref={mainRef} className="flex-1 min-h-0 relative overflow-hidden">
         <div className="hidden md:block absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black/20 to-transparent z-20 pointer-events-none" />
         <div className="hidden md:block absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black/20 to-transparent z-20 pointer-events-none" />
 
