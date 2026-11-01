@@ -7,10 +7,12 @@ import ColorPicker from '../components/ColorPicker';
 import ImageViewer from '../components/ImageViewer';
 
 const GAP = 16;
+const GAP_COMPACT = 8;
 const ROWS = 6; // desktop gallery is exactly 6 unit tiles tall
+const COMPACT_BELOW = 560; // px of viewport height: phones in landscape use the compact layout
 
 export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) {
-  const [viewport, setViewport] = useState({ width: 1280, mainH: 600 });
+  const [viewport, setViewport] = useState({ width: 1280, height: 800, mainH: 600 });
   const [isPickerOpen, setIsPickerOpen] = useState(false);
   const [activeTile, setActiveTile] = useState(null);
   const scrollRef = useRef(null);
@@ -20,11 +22,18 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
   const isDesktop = viewport.width >= 768;
   isDesktopRef.current = isDesktop;
 
+  // Short viewports (a phone in landscape): slimmer header/footer, tighter padding and gap, so the
+  // 6 rows still fit instead of being clipped by the fixed-height tile area.
+  const compact = viewport.height < COMPACT_BELOW;
+  const gap = compact ? GAP_COMPACT : GAP;
+  const padY = compact ? 12 : 32; // vertical padding of the scroll area (each side)
+  const padX = compact ? 24 : 32; // mobile horizontal padding (each side)
+
   // Unit size is derived from the measured space on every render, so it always
   // matches ROWS (no stale value after hot reload or a ROWS change).
   const unitSize = isDesktop
-    ? Math.max(40, (viewport.mainH - 64 - GAP * (ROWS - 1)) / ROWS) // 6 rows fill the whole tile area
-    : Math.max(40, (viewport.width - 32 * 2 - GAP * 5) / 6);
+    ? Math.max(12, (viewport.mainH - padY * 2 - gap * (ROWS - 1)) / ROWS) // 6 rows fill the whole tile area
+    : Math.max(24, (viewport.width - padX * 2 - gap * 5) / 6);
 
   // Desktop: ROWS fixed rows, tiles flow right. Mobile: 6 fixed cols, tiles flow down.
   const { pos, cols, rows } = pack(TILES, isDesktop ? ROWS : 6, isDesktop);
@@ -33,6 +42,7 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
     const measure = () =>
       setViewport({
         width: window.innerWidth,
+        height: window.innerHeight,
         mainH: mainRef.current?.clientHeight ?? window.innerHeight * 0.7,
       });
 
@@ -93,8 +103,8 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
     };
   }, []);
 
-  const gridWidth = Math.max(0, cols * unitSize + (cols - 1) * GAP);
-  const gridHeight = Math.max(0, rows * unitSize + (rows - 1) * GAP);
+  const gridWidth = Math.max(0, cols * unitSize + (cols - 1) * gap);
+  const gridHeight = Math.max(0, rows * unitSize + (rows - 1) * gap);
 
   return (
     <div className="h-screen w-full flex flex-col overflow-hidden text-white relative">
@@ -108,39 +118,53 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
         }
       `}</style>
 
-      <header className="h-[15vh] min-h-[100px] px-8 md:px-24 flex items-end pb-4 md:pb-6 justify-between z-30 shrink-0">
-        <h1 className="text-5xl md:text-7xl font-signpainter tracking-widest text-white leading-none drop-shadow-md">
+      <header
+        className={`${
+          compact ? 'h-14 px-6 pb-2' : 'h-[15vh] min-h-[100px] px-8 md:px-24 pb-4 md:pb-6'
+        } flex items-end justify-between z-30 shrink-0`}
+      >
+        <h1
+          className={`${
+            compact ? 'text-3xl' : 'text-5xl md:text-7xl'
+          } font-signpainter tracking-widest text-white leading-none drop-shadow-md`}
+        >
           Gallery
         </h1>
 
-        <div className="flex gap-4 mb-1">
+        <div className={`flex ${compact ? 'gap-3' : 'gap-4 mb-1'}`}>
           <RoundButton
             onClick={() => setIsPickerOpen(true)}
             accent={bgColor}
             label="Change Background Color"
-            className="w-12 h-12 md:w-14 md:h-14"
+            className={compact ? 'w-10 h-10' : 'w-12 h-12 md:w-14 md:h-14'}
           >
-            <Color24Regular className="text-xl md:text-2xl" />
+            <Color24Regular className={compact ? 'text-xl' : 'text-xl md:text-2xl'} />
           </RoundButton>
 
           <RoundButton
             onClick={onBack}
             accent={bgColor}
             label="Back to Name"
-            className="w-12 h-12 md:w-14 md:h-14"
+            className={compact ? 'w-10 h-10' : 'w-12 h-12 md:w-14 md:h-14'}
           >
-            <ArrowLeft24Regular className="text-xl md:text-2xl" />
+            <ArrowLeft24Regular className={compact ? 'text-xl' : 'text-xl md:text-2xl'} />
           </RoundButton>
         </div>
       </header>
 
       <main ref={mainRef} className="flex-1 min-h-0 relative overflow-hidden">
-        <div className="hidden md:block absolute inset-y-0 left-0 w-32 bg-gradient-to-r from-black/20 to-transparent z-20 pointer-events-none" />
-        <div className="hidden md:block absolute inset-y-0 right-0 w-32 bg-gradient-to-l from-black/20 to-transparent z-20 pointer-events-none" />
+        <div
+          className={`hidden md:block absolute inset-y-0 left-0 ${compact ? 'w-12' : 'w-32'} bg-gradient-to-r from-black/20 to-transparent z-20 pointer-events-none`}
+        />
+        <div
+          className={`hidden md:block absolute inset-y-0 right-0 ${compact ? 'w-12' : 'w-32'} bg-gradient-to-l from-black/20 to-transparent z-20 pointer-events-none`}
+        />
 
         <div
           ref={scrollRef}
-          className="hide-scrollbar h-full w-full overflow-y-auto md:overflow-x-auto md:overflow-y-hidden flex px-8 md:px-24 py-6 md:py-8"
+          className={`hide-scrollbar h-full w-full overflow-y-auto md:overflow-x-auto md:overflow-y-hidden flex ${
+            compact ? 'px-6 py-3' : 'px-8 md:px-24 py-6 md:py-8'
+          }`}
         >
           <div className="relative shrink-0 mt-0 mb-auto" style={{ width: gridWidth, height: gridHeight }}>
             {TILES.map((tile, i) => {
@@ -148,10 +172,10 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
               if (!p) return null;
 
               const style = {
-                top: p.r * (unitSize + GAP),
-                left: p.c * (unitSize + GAP),
-                width: p.w * unitSize + (p.w - 1) * GAP,
-                height: p.h * unitSize + (p.h - 1) * GAP,
+                top: p.r * (unitSize + gap),
+                left: p.c * (unitSize + gap),
+                width: p.w * unitSize + (p.w - 1) * gap,
+                height: p.h * unitSize + (p.h - 1) * gap,
               };
 
               return (
@@ -172,14 +196,20 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
         </div>
       </main>
 
-      <footer className="h-[15vh] min-h-[100px] px-8 md:px-24 flex items-center justify-end z-30 shrink-0">
+      <footer
+        className={`${
+          compact ? 'h-14 px-6' : 'h-[15vh] min-h-[100px] px-8 md:px-24'
+        } flex items-center justify-end z-30 shrink-0`}
+      >
         <RoundButton
           onClick={onNextSection}
           accent={bgColor}
           label="Next Section"
-          className="w-14 h-14 group"
+          className={`${compact ? 'w-10 h-10' : 'w-14 h-14'} group`}
         >
-          <ChevronDown24Regular className="text-2xl group-hover:translate-y-1 transition-transform" />
+          <ChevronDown24Regular
+            className={`${compact ? 'text-xl' : 'text-2xl'} group-hover:translate-y-1 transition-transform`}
+          />
         </RoundButton>
       </footer>
 
