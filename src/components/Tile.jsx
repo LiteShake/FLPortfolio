@@ -1,7 +1,7 @@
 import React from 'react';
 import Caption from './Caption';
 
-const FLAG_FONT = '"Segoe Print", "Segoe Script", "Bradley Hand", "Comic Sans MS", cursive';
+const FLAG_FONT = '"Segoe Print", "Segoe Script", "Bradley Hand", "Comic Sans MS", Roboto';
 
 export default function Tile({
   color,
