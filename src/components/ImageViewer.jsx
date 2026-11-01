@@ -3,7 +3,7 @@ import { ArrowLeft24Regular } from '@fluentui/react-icons';
 import Caption from './Caption';
 
 const MIN_ZOOM = 1;
-const MAX_ZOOM = 2; // 200%
+const MAX_ZOOM = 2.5; // 200%
 
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
