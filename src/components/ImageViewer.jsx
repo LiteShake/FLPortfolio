@@ -126,8 +126,17 @@ export default function ImageViewer({ tile, bgColor, onClose }) {
         .metro-range:focus-visible::-webkit-slider-thumb { box-shadow: 0 0 0 3px rgba(255,255,255,.5); }
       `}</style>
 
-      {/* Click outside the frame to close; gallery stays visible behind */}
-      <div className="absolute inset-0 bg-black/10" onClick={onClose} aria-hidden="true" />
+      {/* Click outside the frame to close; gallery stays visible behind, darkened and blurred */}
+      <div
+        className="absolute inset-0"
+        style={{
+          background: 'rgba(0, 0, 0, 0.55)',
+          backdropFilter: 'blur(10px)',
+          WebkitBackdropFilter: 'blur(10px)',
+        }}
+        onClick={onClose}
+        aria-hidden="true"
+      />
 
       <div
         className="viewer-frame viewer-frame-anim relative shadow-2xl"
