@@ -12,15 +12,15 @@
   --color-metro-pink: #d33582;
 
   /* Fonts */
-  --font-script: "Segoe Script", "Signpainter", cursive;
-  --font-print: "Segoe Print", cursive;
-  --font-signpainter: "Signpainter", cursive;
+  --font-script: "Segoe Script", "Signpainter", Roboto;
+  --font-print: "Segoe Print", Roboto;
+  --font-signpainter: "Signpainter", Roboto;
 }
 
 @layer base {
   html {
     /* Default to the chaotic Windows fonts */
-    font-family: "Segoe Print", "Signpainter", cursive;
+    font-family: "Segoe Print", "Signpainter", Roboto;
     background-color: var(--color-metro-bg);
   }
   
