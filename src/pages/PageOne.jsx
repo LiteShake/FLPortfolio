@@ -163,6 +163,8 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
                   style={style}
                   onClick={() => setActiveTile(tile)}
                   caption={p.w * p.h > 1} // no caption on small 1x1 tiles
+                  isNew={!!tile.isNew}
+                  accent={bgColor}
                 />
               );
             })}
