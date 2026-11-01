@@ -2,6 +2,8 @@
 // Sizes: 1x1, 2x2, 2x4 (tall), 4x2 (wide), 4x4. Tiles are auto-packed in the order listed.
 
 export const TILES = [
+  { id: 't16', label: 'Halloween 2026', subtitle: 'Halloween', w: 4, h: 4, color: 'bg-metro-teal', image: '/images/16.webp' },
+
   // 4x2 (Wide)
   { id: 't1', label: 'Blackhole', subtitle: 'Space', w: 4, h: 2, color: 'bg-metro-teal', image: '/images/1.webp' },
   // 2x2 (Square)
@@ -40,11 +42,13 @@ export const TILES = [
  * horizontal = true  -> fixed number of ROWS (`lanes`), tiles flow to the right (desktop)
  * horizontal = false -> fixed number of COLS (`lanes`), tiles flow downward (mobile)
  *
- * Returns { pos: { [id]: { r, c } }, cols, rows } in grid cells.
+ * Returns { pos, cols, rows }. `pos` is an ARRAY indexed like `tiles` (not keyed by id), so a
+ * duplicate or missing id can never make two tiles share a slot. Each entry is
+ * { r, c, w, h } in grid cells (w/h already clamped to fit the lanes).
  */
 export function pack(tiles, lanes, horizontal = true) {
   const occ = []; // occ[flow][lane]
-  const pos = {};
+  const pos = [];
 
   const free = (b, a, lb, la) => {
     for (let db = 0; db < lb; db++)
@@ -52,9 +56,11 @@ export function pack(tiles, lanes, horizontal = true) {
     return true;
   };
 
-  for (const t of tiles) {
-    const la = Math.min(horizontal ? t.h : t.w, lanes);
-    const lb = horizontal ? t.w : t.h;
+  tiles.forEach((t, i) => {
+    const w = Math.max(1, Math.min(t.w, horizontal ? Infinity : lanes));
+    const h = Math.max(1, Math.min(t.h, horizontal ? lanes : Infinity));
+    const la = horizontal ? h : w;
+    const lb = horizontal ? w : h;
     let placed = false;
 
     for (let b = 0; !placed; b++) {
@@ -64,12 +70,12 @@ export function pack(tiles, lanes, horizontal = true) {
           occ[b + db] = occ[b + db] ?? Array(lanes).fill(false);
           for (let da = 0; da < la; da++) occ[b + db][a + da] = true;
         }
-        pos[t.id] = horizontal ? { r: a, c: b } : { r: b, c: a };
+        pos[i] = horizontal ? { r: a, c: b, w, h } : { r: b, c: a, w, h };
         placed = true;
         break;
       }
     }
-  }
+  });
 
   const flow = Math.max(1, occ.length);
   return { pos, cols: horizontal ? flow : lanes, rows: horizontal ? lanes : flow };

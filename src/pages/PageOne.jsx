@@ -3,6 +3,7 @@ import Tile from '../components/Tile';
 import { TILES, pack } from '../data/gallery';
 import { ArrowLeft24Regular, ChevronDown24Regular, Color24Regular } from '@fluentui/react-icons';
 import ColorPicker from '../components/ColorPicker';
+import ImageViewer from '../components/ImageViewer';
 
 const GAP = 16;
 const ROWS = 6;       // desktop gallery is exactly 6 unit tiles tall
@@ -10,6 +11,7 @@ const ROWS = 6;       // desktop gallery is exactly 6 unit tiles tall
 export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) {
   const [viewport, setViewport] = useState({ width: 1280, mainH: 600 });
   const [isPickerOpen, setIsPickerOpen] = useState(false);
+  const [activeTile, setActiveTile] = useState(null);
   const scrollRef = useRef(null);
   const mainRef = useRef(null);
   const isDesktopRef = useRef(false);
@@ -141,25 +143,26 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
             className="relative shrink-0 mt-0 mb-auto"
             style={{ width: gridWidth, height: gridHeight }}
           >
-            {TILES.map((tile) => {
-              const p = pos[tile.id];
+            {TILES.map((tile, i) => {
+              const p = pos[i]; // positions are looked up by index, so duplicate ids can't collide
               if (!p) return null;
 
               const style = {
                 top: p.r * (unitSize + GAP),
                 left: p.c * (unitSize + GAP),
-                width: tile.w * unitSize + (tile.w - 1) * GAP,
-                height: tile.h * unitSize + (tile.h - 1) * GAP,
+                width: p.w * unitSize + (p.w - 1) * GAP,
+                height: p.h * unitSize + (p.h - 1) * GAP,
               };
 
               return (
                 <Tile
-                  key={tile.id}
+                  key={`${tile.id}-${i}`}
                   color={tile.color}
                   title={tile.label}
-                  subtitle={tile.subtitle}
                   image={tile.image}
                   style={style}
+                  onClick={() => setActiveTile(tile)}
+                  caption={p.w * p.h > 1} // no caption on small 1x1 tiles
                 />
               );
             })}
@@ -176,6 +179,10 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
           <ChevronDown24Regular className="text-2xl group-hover:translate-y-1 transition-transform" />
         </button>
       </footer>
+
+      {activeTile && (
+        <ImageViewer tile={activeTile} bgColor={bgColor} onClose={() => setActiveTile(null)} />
+      )}
 
       <ColorPicker
         isOpen={isPickerOpen}
