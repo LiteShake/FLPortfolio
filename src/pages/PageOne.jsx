@@ -2,11 +2,12 @@ import React, { useRef, useEffect, useState } from 'react';
 import Tile from '../components/Tile';
 import { TILES, pack } from '../data/gallery';
 import { ArrowLeft24Regular, ChevronDown24Regular, Color24Regular } from '@fluentui/react-icons';
+import RoundButton from '../components/RoundButton';
 import ColorPicker from '../components/ColorPicker';
 import ImageViewer from '../components/ImageViewer';
 
 const GAP = 16;
-const ROWS = 6;       // desktop gallery is exactly 6 unit tiles tall
+const ROWS = 6; // desktop gallery is exactly 6 unit tiles tall
 
 export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) {
   const [viewport, setViewport] = useState({ width: 1280, mainH: 600 });
@@ -113,21 +114,23 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
         </h1>
 
         <div className="flex gap-4 mb-1">
-          <button
+          <RoundButton
             onClick={() => setIsPickerOpen(true)}
-            className="w-12 h-12 md:w-14 md:h-14 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
-            aria-label="Change Background Color"
+            accent={bgColor}
+            label="Change Background Color"
+            className="w-12 h-12 md:w-14 md:h-14"
           >
             <Color24Regular className="text-xl md:text-2xl" />
-          </button>
+          </RoundButton>
 
-          <button
+          <RoundButton
             onClick={onBack}
-            className="w-12 h-12 md:w-14 md:h-14 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg"
-            aria-label="Back to Name"
+            accent={bgColor}
+            label="Back to Name"
+            className="w-12 h-12 md:w-14 md:h-14"
           >
             <ArrowLeft24Regular className="text-xl md:text-2xl" />
-          </button>
+          </RoundButton>
         </div>
       </header>
 
@@ -139,10 +142,7 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
           ref={scrollRef}
           className="hide-scrollbar h-full w-full overflow-y-auto md:overflow-x-auto md:overflow-y-hidden flex px-8 md:px-24 py-6 md:py-8"
         >
-          <div
-            className="relative shrink-0 mt-0 mb-auto"
-            style={{ width: gridWidth, height: gridHeight }}
-          >
+          <div className="relative shrink-0 mt-0 mb-auto" style={{ width: gridWidth, height: gridHeight }}>
             {TILES.map((tile, i) => {
               const p = pos[i]; // positions are looked up by index, so duplicate ids can't collide
               if (!p) return null;
@@ -173,18 +173,17 @@ export default function PageOne({ bgColor, setBgColor, onNextSection, onBack }) 
       </main>
 
       <footer className="h-[15vh] min-h-[100px] px-8 md:px-24 flex items-center justify-end z-30 shrink-0">
-        <button
+        <RoundButton
           onClick={onNextSection}
-          className="w-14 h-14 bg-white/10 hover:bg-white/20 rounded-full flex items-center justify-center transition-all duration-300 shadow-lg backdrop-blur-sm group"
-          aria-label="Next Section"
+          accent={bgColor}
+          label="Next Section"
+          className="w-14 h-14 group"
         >
           <ChevronDown24Regular className="text-2xl group-hover:translate-y-1 transition-transform" />
-        </button>
+        </RoundButton>
       </footer>
 
-      {activeTile && (
-        <ImageViewer tile={activeTile} bgColor={bgColor} onClose={() => setActiveTile(null)} />
-      )}
+      {activeTile && <ImageViewer tile={activeTile} bgColor={bgColor} onClose={() => setActiveTile(null)} />}
 
       <ColorPicker
         isOpen={isPickerOpen}
