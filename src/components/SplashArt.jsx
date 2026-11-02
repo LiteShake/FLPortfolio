@@ -23,8 +23,11 @@ export default function SplashArt() {
           <source src="/intro.mp4" type="video/mp4" />
         </video>
 
-        <p className="text-xl md:text-3xl font-script text-white/80 tracking-widest uppercase mt-6 text-center animate-pulse">
+        <p className="text-xl md:text-3xl font-script text-white/80 tracking-widest uppercase mt-6 text-center">
           Artist / Illustrator
+        </p>
+        <p className="text-l md:text-2xl font-script text-white/80 tracking-widest uppercase mt-6 text-center">
+          I love exploring creative things!
         </p>
       </div>
     </div>
